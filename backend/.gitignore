@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Saved models (large files)
+saved_models/
+*.h5
+*.pkl
+
+# Environment
+.env
+
+# Data
+data/
+
+# Logs
+*.log
