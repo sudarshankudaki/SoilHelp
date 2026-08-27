@@ -5,9 +5,15 @@
 
 import { Platform } from "react-native";
 
-// ── Change this to your machine's local IP when testing on a physical device ──
-// e.g. "http://192.168.1.10:8000"
-export const API_BASE_URL = "http://192.168.0.9:8000";
+const LOCAL_BACKEND_URL = "http://localhost:8000";
+const DEVICE_BACKEND_URL = "http://192.168.0.9:8000";
+
+// Web runs from the browser, so it must hit localhost on the same machine.
+// Native apps need the LAN IP of the machine running the backend.
+export const API_BASE_URL =
+  Platform.OS === "web"
+    ? (typeof window !== "undefined" ? `http://${window.location.hostname}:8000` : LOCAL_BACKEND_URL)
+    : DEVICE_BACKEND_URL;
 
 export interface NutrientInfo {
   value: number;
@@ -49,7 +55,18 @@ export interface SoilAnalysisResult {
 
 export async function analyzeSoilImage(
   imageUri: string,
-  mimeType?: string
+  mimeType?: string,
+  soilMetadata?: {
+    texture?: string;
+    moisture_pct?: number;
+    organic_carbon_pct?: number;
+    ec_ds_m?: number;
+    temperature_c?: number;
+    rainfall_mm?: number;
+    ph?: number;
+    slope?: number;
+    water_logging?: number;
+  }
 ): Promise<SoilAnalysisResult> {
   const formData = new FormData();
 
@@ -82,6 +99,24 @@ export async function analyzeSoilImage(
       type: detectedType,
     } as any);
   }
+
+  const metadata = soilMetadata || {
+    texture: "Loam",
+    moisture_pct: 28,
+    organic_carbon_pct: 1.2,
+    ec_ds_m: 1.5,
+    temperature_c: 28,
+    rainfall_mm: 750,
+    ph: 6.5,
+    slope: 0.5,
+    water_logging: 0,
+  };
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, String(value));
+    }
+  });
 
   let response: Response;
   try {

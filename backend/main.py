@@ -53,7 +53,19 @@ async def health():
 # POST /analyze  - Main soil analysis endpoint
 # -----------------------------------------------------------------------------
 @app.post("/analyze")
-async def analyze_soil(file: UploadFile = File(...), state: str = Form("Karnataka")):
+async def analyze_soil(
+    file: UploadFile = File(...),
+    state: str = Form("Karnataka"),
+    texture: str = Form("Loam"),
+    moisture_pct: float = Form(28.0),
+    organic_carbon_pct: float = Form(1.2),
+    ec_ds_m: float = Form(1.5),
+    temperature_c: float = Form(28.0),
+    rainfall_mm: float = Form(750.0),
+    ph: float = Form(6.5),
+    slope: float = Form(0.5),
+    water_logging: float = Form(0.0),
+):
     """
     Accepts a soil image (JPG/PNG), runs:
       1. Google Cloud Vision API - image validation + dominant color
@@ -82,6 +94,18 @@ async def analyze_soil(file: UploadFile = File(...), state: str = Form("Karnatak
             detail="Invalid image format. Please upload a valid JPG or PNG image."
         )
 
+    soil_features = {
+        "texture": texture,
+        "moisture_pct": moisture_pct,
+        "organic_carbon_pct": organic_carbon_pct,
+        "ec_ds_m": ec_ds_m,
+        "temperature_c": temperature_c,
+        "rainfall_mm": rainfall_mm,
+        "ph": ph,
+        "slope": slope,
+        "water_logging": water_logging,
+    }
+
     # -- Step 1: Google Cloud Vision API --------------------------------------
     vision_result = await analyze_with_vision_api(image_bytes)
 
@@ -90,7 +114,11 @@ async def analyze_soil(file: UploadFile = File(...), state: str = Form("Karnatak
         print(f"[--] Vision API: image may not be soil. Labels: {vision_result['labels']}")
 
     # -- Step 2 & 3: ML Model Inference ---------------------------------------
-    ml_result = predict(image_bytes, vision_hint=vision_result["soil_color_hint"])
+    ml_result = predict(
+        image_bytes,
+        vision_hint=vision_result["soil_color_hint"],
+        soil_features=soil_features,
+    )
 
     # Blend soil type: if vision confidence is high, weight its hint
     soil_type = ml_result["soil_type"]

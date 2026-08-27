@@ -34,6 +34,7 @@ import joblib
 
 # --- Constants ----------------------------------------------------------------
 SOIL_CLASSES = ["Sandy", "Clay", "Loam", "Black", "Red"]
+TEXTURE_TO_INDEX = {cls.lower(): idx for idx, cls in enumerate(SOIL_CLASSES)}
 IMG_SIZE = (224, 224)
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "saved_models")
 os.makedirs(MODEL_DIR, exist_ok=True)
@@ -42,6 +43,17 @@ SOIL_MODEL_PATH   = os.path.join(MODEL_DIR, "soil_classifier.h5")
 NPK_MODEL_PATH    = os.path.join(MODEL_DIR, "npk_regressor.pkl")
 SCALER_PATH       = os.path.join(MODEL_DIR, "npk_scaler.pkl")
 SOIL_ENCODER_PATH = os.path.join(MODEL_DIR, "soil_label_encoder.pkl")
+
+STRUCTURED_SOIL_FEATURE_KEYS = [
+    "moisture_pct",
+    "organic_carbon_pct",
+    "ec_ds_m",
+    "temperature_c",
+    "rainfall_mm",
+    "ph",
+    "slope",
+    "water_logging",
+]
 
 
 # ------------------------------------------------------------------------------
@@ -179,17 +191,62 @@ def extract_color_features(image_array: np.ndarray) -> np.ndarray:
     return np.array(features)
 
 
-def build_npk_feature_vector(color_features: np.ndarray, soil_type: str = None) -> np.ndarray:
+def _normalize_soil_features(soil_features: dict | None, soil_type: str | None) -> dict:
+    """Normalize optional soil metadata into a consistent dictionary."""
+    normalized = {
+        "texture": (soil_type or "Loam").strip().title(),
+        "moisture_pct": 28.0,
+        "organic_carbon_pct": 1.2,
+        "ec_ds_m": 1.5,
+        "temperature_c": 28.0,
+        "rainfall_mm": 750.0,
+        "ph": 6.5,
+        "slope": 0.5,
+        "water_logging": 0.0,
+    }
+    if soil_features:
+        for key, value in soil_features.items():
+            if value is None or value == "":
+                continue
+            normalized[key] = value
+    if normalized["texture"] not in SOIL_CLASSES:
+        normalized["texture"] = soil_type if soil_type in SOIL_CLASSES else "Loam"
+    return normalized
+
+
+def build_npk_feature_vector(
+    color_features: np.ndarray,
+    soil_type: str = None,
+    soil_features: dict | None = None,
+) -> np.ndarray:
     """
-    Build the full 197-dim feature vector for NPK inference:
-      192 colour histogram dims  +  5 soil-type one-hot dims
-    If soil_type is None or unknown, the one-hot part is all zeros
-    (model falls back gracefully to colour-only prediction).
+    Build the full feature vector for NPK inference:
+      192 colour histogram dims + 5 soil-type one-hot dims + 9 structured soil feature dims.
+    The structured values keep the model grounded in real soil measurements while still
+    preserving the old image-based fallback when metadata is empty.
     """
     one_hot = np.zeros(len(SOIL_CLASSES), dtype=np.float32)
     if soil_type and soil_type in SOIL_CLASSES:
         one_hot[SOIL_CLASSES.index(soil_type)] = 1.0
-    return np.concatenate([color_features, one_hot])
+
+    normalized = _normalize_soil_features(soil_features, soil_type)
+    texture_idx = TEXTURE_TO_INDEX.get(normalized["texture"].lower(), TEXTURE_TO_INDEX["loam"])
+    texture_one_hot = np.zeros(len(SOIL_CLASSES), dtype=np.float32)
+    texture_one_hot[texture_idx] = 1.0
+
+    structured_values = np.array([
+        float(normalized.get("moisture_pct", 28.0)),
+        float(normalized.get("organic_carbon_pct", 1.2)),
+        float(normalized.get("ec_ds_m", 1.5)),
+        float(normalized.get("temperature_c", 28.0)),
+        float(normalized.get("rainfall_mm", 750.0)),
+        float(normalized.get("ph", 6.5)),
+        float(normalized.get("slope", 0.5)),
+        float(normalized.get("water_logging", 0.0)),
+    ], dtype=np.float32)
+
+    # Preserve the old color+soil-type representation by appending structured values.
+    return np.concatenate([color_features, one_hot, texture_one_hot, structured_values])
 
 
 # -- ICAR-calibrated NPK ranges (Indian Council of Agricultural Research norms) -
@@ -278,8 +335,18 @@ def _load_npk_from_csv(csv_path: str) -> tuple:
         c = [np.random.randint(lo, hi) for lo, hi in zip(c_min, c_max)]
         img = np.random.normal(c, 20, (224, 224, 3)).clip(0, 255).astype(np.uint8)
         color_feat = extract_color_features(img)
-        # Append soil-type one-hot (197-dim total)
-        feat = build_npk_feature_vector(color_feat, soil)
+        soil_features = {
+            "texture": soil if soil in SOIL_CLASSES else "Loam",
+            "moisture_pct": float(row.get("moisture_pct", 28.0)),
+            "organic_carbon_pct": float(row.get("organic_carbon_pct", 1.2)),
+            "ec_ds_m": float(row.get("ec_ds_m", 1.5)),
+            "temperature_c": float(row.get("temperature_c", 28.0)),
+            "rainfall_mm": float(row.get("rainfall_mm", 750.0)),
+            "ph": float(row.get("pH", 6.5)),
+            "slope": float(row.get("slope", 0.5)),
+            "water_logging": float(row.get("water_logging", 0.0)),
+        }
+        feat = build_npk_feature_vector(color_feat, soil, soil_features)
         X.append(feat)
         y.append([float(row["N"]), float(row["P"]),
                   float(row["K"]), float(row["pH"])])
@@ -308,7 +375,18 @@ def _generate_synthetic_npk_data(n_samples: int = 3000) -> tuple:
         for _ in range(n_per_class):
             img = np.random.randint(c_min, c_max, (224, 224, 3), dtype=np.uint8)
             color_feat = extract_color_features(img)
-            feat = build_npk_feature_vector(color_feat, soil_name)
+            soil_features = {
+                "texture": soil_name,
+                "moisture_pct": np.random.uniform(18.0, 42.0),
+                "organic_carbon_pct": np.random.uniform(0.4, 2.0),
+                "ec_ds_m": np.random.uniform(0.8, 3.2),
+                "temperature_c": np.random.uniform(24.0, 34.0),
+                "rainfall_mm": np.random.uniform(400.0, 1200.0),
+                "ph": np.random.uniform(params["pH"][0], params["pH"][1]),
+                "slope": np.random.uniform(0.1, 1.0),
+                "water_logging": np.random.uniform(0.0, 0.3),
+            }
+            feat = build_npk_feature_vector(color_feat, soil_name, soil_features)
             X.append(feat)
 
             N  = params["N"][0]  + (params["N"][1]  - params["N"][0])  * np.random.beta(2, 2)
@@ -328,7 +406,18 @@ def _generate_synthetic_npk_data(n_samples: int = 3000) -> tuple:
         for _ in range(150):
             img = np.random.randint(c_min, c_max, (224, 224, 3), dtype=np.uint8)
             color_feat = extract_color_features(img)
-            feat = build_npk_feature_vector(color_feat, soil_name)
+            soil_features = {
+                "texture": soil_name,
+                "moisture_pct": np.random.uniform(20.0, 40.0),
+                "organic_carbon_pct": np.random.uniform(0.5, 2.2),
+                "ec_ds_m": np.random.uniform(1.0, 2.8),
+                "temperature_c": np.random.uniform(22.0, 32.0),
+                "rainfall_mm": np.random.uniform(500.0, 1000.0),
+                "ph": np.random.uniform(ka_ph_lo, ka_ph_hi),
+                "slope": np.random.uniform(0.2, 0.8),
+                "water_logging": np.random.uniform(0.0, 0.25),
+            }
+            feat = build_npk_feature_vector(color_feat, soil_name, soil_features)
             X.append(feat)
 
             N  = ka_n_lo  + (ka_n_hi  - ka_n_lo)  * np.random.beta(3, 3)
@@ -459,8 +548,8 @@ def _run_npk_ensemble(ensemble, feat_scaled: np.ndarray) -> np.ndarray:
         return ensemble.predict(feat_scaled)[0]
 
 
-def predict(image_bytes: bytes, vision_hint: str = "Loam") -> dict:
-    """Run full soil analysis on image bytes."""
+def predict(image_bytes: bytes, vision_hint: str = "Loam", soil_features: dict | None = None) -> dict:
+    """Run full soil analysis on image bytes and optional structured soil metadata."""
     if _soil_model is None or _npk_model is None:
         load_models()
 
@@ -481,9 +570,10 @@ def predict(image_bytes: bytes, vision_hint: str = "Loam") -> dict:
         all_probs[soil_type] = soil_confidence
 
     # -- NPK + pH Prediction ---------------------------------------------------
-    # Build 197-dim feature: 192 colour histogram + 5 soil-type one-hot
-    # Using the CNN-predicted soil type improves NPK accuracy significantly
-    full_feat = build_npk_feature_vector(color_features, soil_type)
+    # Build feature vector from image + soil metadata. Structured measurements help the
+    # model separate soil conditions that are visually similar but agronomically different.
+    merged_features = _normalize_soil_features(soil_features, soil_type)
+    full_feat = build_npk_feature_vector(color_features, soil_type, merged_features)
     feat_scaled = _scaler.transform([full_feat])
     npk_pred = _run_npk_ensemble(_npk_model, feat_scaled)
 
