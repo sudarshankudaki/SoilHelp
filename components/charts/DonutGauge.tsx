@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DonutGauge — circular arc that fills to show a percentage value.
  * Uses react-native-svg. Works on web + native.
  */
@@ -43,7 +43,7 @@ export default function DonutGauge({
           fill="none"
         />
         {/* Filled arc — rotated so it starts at the top */}
-        <G rotation="-90" originX={cx} originY={cy}>
+        <G transform={`rotate(-90 ${cx} ${cy})`}>
           <Circle
             cx={cx} cy={cy} r={r}
             stroke={color}
@@ -72,4 +72,3 @@ const styles = StyleSheet.create({
   number: { fontSize: 22, fontWeight: 'bold' },
   label:  { fontSize: 10, marginTop: 2, opacity: 0.7 },
 });
-
