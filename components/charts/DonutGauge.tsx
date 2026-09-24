@@ -43,7 +43,7 @@ export default function DonutGauge({
           fill="none"
         />
         {/* Filled arc — rotated so it starts at the top */}
-        <G rotation="-90" origin={`${cx}, ${cy}`}>
+        <G rotation="-90" originX={cx} originY={cy}>
           <Circle
             cx={cx} cy={cy} r={r}
             stroke={color}
@@ -72,3 +72,4 @@ const styles = StyleSheet.create({
   number: { fontSize: 22, fontWeight: 'bold' },
   label:  { fontSize: 10, marginTop: 2, opacity: 0.7 },
 });
+
