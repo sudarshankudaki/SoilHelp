@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { FontAwesome } from '@expo/vector-icons';
 import { useTranslation } from '@/context/LanguageContext';
 import { useRouter } from 'expo-router';
-import { addFarmer } from '@/constants/FarmerData';
+import { addFarmerAsync } from '@/constants/FarmerData';
 
 export default function RegistrationScreen() {
   const colorScheme = useColorScheme();
@@ -21,32 +21,47 @@ export default function RegistrationScreen() {
     farmSize: '',
     village: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     const { name, phone, farmSize, village } = formData;
 
-    // Simple Validation
-    if (!name || !phone || !farmSize || !village) {
-      Alert.alert('Error', 'Please fill in all fields');
+    // Validation
+    if (!name.trim() || !phone.trim() || !farmSize.trim() || !village.trim()) {
+      Alert.alert(t('incompleteForm'), t('fillFarmerDetails'));
       return;
     }
 
-    if (phone.length < 10) {
-      Alert.alert('Error', 'Please enter a valid mobile number');
+    if (phone.replace(/\D/g, '').length < 10) {
+      Alert.alert(t('invalidMobile'), t('validMobile'));
       return;
     }
 
-    // Success
-    addFarmer({ name, phone, farmSize, village });
+    setIsSubmitting(true);
+    try {
+      const newFarmer = await addFarmerAsync({
+        name: name.trim(),
+        phone: phone.trim(),
+        farmSize: farmSize.trim(),
+        village: village.trim(),
+      });
 
-    Alert.alert(
-      'Success',
-      `Farmer ${name} has been registered successfully!`,
-      [
-        { text: 'View List', onPress: () => router.push('/farmers') },
-        { text: 'OK', onPress: () => setFormData({ name: '', phone: '', farmSize: '', village: '' }) }
-      ]
-    );
+      setFormData({ name: '', phone: '', farmSize: '', village: '' });
+
+      Alert.alert(
+        t('farmerRegistered'),
+        `${newFarmer.name} from ${newFarmer.village} (${newFarmer.farmSize} Acres) ${t('farmerSaved')}`,
+        [
+          { text: t('viewAllFarmers'), onPress: () => router.push('/farmers') },
+          { text: t('collectSoilSample'), onPress: () => router.push('/collection') },
+          { text: t('addAnother'), style: 'cancel' },
+        ]
+      );
+    } catch (err) {
+      Alert.alert(t('error'), t('couldNotSaveFarmer'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -61,7 +76,7 @@ export default function RegistrationScreen() {
         <Text style={[styles.label, { color: theme.text }]}>{t('fullName')}</Text>
         <TextInput 
           style={[styles.input, { borderColor: theme.border, color: theme.text }]} 
-          placeholder="e.g. Ramesh Kumar"
+          placeholder={t('fullName')}
           placeholderTextColor={theme.tabIconDefault}
           value={formData.name}
           onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -70,7 +85,7 @@ export default function RegistrationScreen() {
         <Text style={[styles.label, { color: theme.text }]}>{t('mobileNumber')}</Text>
         <TextInput 
           style={[styles.input, { borderColor: theme.border, color: theme.text }]} 
-          placeholder="+91 98765 43210"
+          placeholder={t('mobileNumber')}
           keyboardType="phone-pad"
           placeholderTextColor={theme.tabIconDefault}
           value={formData.phone}
@@ -80,7 +95,7 @@ export default function RegistrationScreen() {
         <Text style={[styles.label, { color: theme.text }]}>{t('farmSize')}</Text>
         <TextInput 
           style={[styles.input, { borderColor: theme.border, color: theme.text }]} 
-          placeholder="e.g. 2.5"
+          placeholder={t('farmSize')}
           keyboardType="numeric"
           placeholderTextColor={theme.tabIconDefault}
           value={formData.farmSize}
@@ -90,18 +105,23 @@ export default function RegistrationScreen() {
         <Text style={[styles.label, { color: theme.text }]}>{t('village')}</Text>
         <TextInput 
           style={[styles.input, { borderColor: theme.border, color: theme.text }]} 
-          placeholder="Enter village name"
+          placeholder={t('village')}
           placeholderTextColor={theme.tabIconDefault}
           value={formData.village}
           onChangeText={(text) => setFormData({ ...formData, village: text })}
         />
 
         <TouchableOpacity 
-          style={[styles.button, { backgroundColor: theme.primary }]} 
+          style={[styles.button, { backgroundColor: theme.primary, opacity: isSubmitting ? 0.7 : 1 }]} 
           activeOpacity={0.8}
           onPress={handleRegister}
+          disabled={isSubmitting}
         >
-          <Text style={styles.buttonText}>{t('registerBtn')}</Text>
+          {isSubmitting ? (
+            <ActivityIndicator color="#FFF" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>{t('registerBtn')}</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -109,7 +129,7 @@ export default function RegistrationScreen() {
         style={styles.listLink} 
         onPress={() => router.push('/farmers')}
       >
-        <Text style={[styles.listLinkText, { color: theme.primary }]}>View All Registered Farmers</Text>
+        <Text style={[styles.listLinkText, { color: theme.primary }]}>{t('viewAllFarmers')}</Text>
         <FontAwesome name="arrow-right" size={14} color={theme.primary} />
       </TouchableOpacity>
     </ScrollView>

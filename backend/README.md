@@ -1,135 +1,158 @@
-# SoilHelp — ML Backend Setup Guide
+# SoilHelp Backend
 
-## 🗂️ Project Structure
-```
-backend/
-├── main.py                  # FastAPI server
-├── train_models.py          # Run this once to train models
-├── start_server.bat         # Double-click to start server (Windows)
-├── requirements.txt         # Python dependencies
-├── .env                     # API keys (edit this)
-├── model/
-│   ├── predict.py           # CNN + NPK model definitions & inference
-│   └── __init__.py
-├── utils/
-│   ├── vision_api.py        # Google Cloud Vision integration
-│   ├── recommendations.py   # Crop & fertilizer logic
-│   └── __init__.py
-└── saved_models/            # Auto-created after training
-    ├── soil_classifier.h5   # CNN model (requires dataset)
-    ├── npk_regressor.pkl    # Random Forest NPK model
-    └── npk_scaler.pkl
-```
+The backend is a Python FastAPI service used by the SoilHelp Expo app. It
+provides soil-image analysis, farmer and sample persistence, and optional AI
+assistant endpoints.
 
----
+## Requirements
 
-## ⚡ Quick Start (3 Steps)
+- Python 3.10 or newer
+- Windows PowerShell, macOS/Linux shell, or an equivalent terminal
+- The saved model files in `saved_models/` for local soil analysis
 
-### Step 1 — Install Dependencies
+TensorFlow is used for inference. On native Windows, TensorFlow runs on the
+CPU; GPU support requires WSL2 or another supported environment.
+
+## Quick start
+
+From the repository root:
+
 ```powershell
-cd d:\APP\SoilHelp\backend
-pip install -r requirements.txt
+cd D:\APP\SoilHelp\backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python main.py
 ```
 
-### Step 2 — Train the NPK Model
+The API will be available at:
+
+- API: <http://127.0.0.1:8000>
+- Swagger/OpenAPI docs: <http://127.0.0.1:8000/docs>
+- Health check: <http://127.0.0.1:8000/health>
+
+To stop the server, press `Ctrl+C`.
+
+### Windows shortcut
+
+After dependencies are installed, `start_server.bat` can start the server:
+
+```powershell
+.\start_server.bat
+```
+
+The batch file may attempt model training if the expected NPK model is missing.
+For normal development, keep the supplied files in `saved_models/` and start
+with `python main.py`.
+
+## Connect the Expo app
+
+Start the frontend from a second terminal:
+
+```powershell
+cd D:\APP\SoilHelp
+npm install
+npm start
+```
+
+The backend URL is configured in the app under **Profile → Server Connection**.
+
+Use the appropriate URL for the client:
+
+| Client | Backend URL |
+| --- | --- |
+| Web | `http://localhost:8000` |
+| iOS simulator | `http://localhost:8000` |
+| Android emulator | `http://10.0.2.2:8000` |
+| Physical phone | `http://YOUR_COMPUTER_LAN_IP:8000` |
+
+For a physical device, find the computer's LAN address with:
+
+```powershell
+ipconfig
+```
+
+The phone and computer must be on the same network, and the firewall must
+allow inbound connections to port `8000`.
+
+`EXPO_PUBLIC_API_URL` can also provide the native default URL. The in-app
+server setting takes precedence after it is saved.
+
+## API areas
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/health` | Backend health check |
+| POST | `/analyze` | Analyze a soil image |
+| GET/POST | `/farmers` | List or register farmers |
+| GET/DELETE | `/farmers/{farmer_id}` | Read or delete a farmer |
+| GET/POST | `/samples` | List or register samples |
+| GET | `/samples/{sample_id}` | Read a sample |
+| PATCH | `/samples/{sample_id}/status` | Update sample status |
+| GET/POST | `/ai/health`, `/ai/*` | Optional AI assistant endpoints |
+
+Farmer and sample data are stored in `soilhelp.db`, a SQLite database created
+automatically when the server starts.
+
+## Environment configuration
+
+Copy `.env.example` to `.env` when optional integrations are needed:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Supported settings include:
+
+- `GOOGLE_CLOUD_API_KEY` — optional image validation through Google Vision
+- `BACKEND_HOST` and `BACKEND_PORT` — informational local configuration
+- Gemini configuration used by the optional AI assistant
+
+Do not commit `.env` or API keys.
+
+Without an external Vision or Gemini key, the backend uses its local/fallback
+behavior where supported. The main image analysis still requires valid model
+files and a valid image.
+
+## Model training
+
+Training is not required to start the current project when the saved models
+are already present. Training scripts are available for development:
+
 ```powershell
 python train_models.py
 ```
-> This takes ~30 seconds. Generates `saved_models/npk_regressor.pkl`
 
-### Step 3 — Start the Server
-```powershell
-python main.py
-# OR double-click start_server.bat
-```
-> Server runs at: **http://localhost:8000**  
-> API docs at: **http://localhost:8000/docs**
+For CNN training with a soil image dataset, organize images under:
 
----
-
-## 📱 Connect React Native App
-
-Find your PC's local IP address:
-```powershell
-ipconfig
-# Look for: IPv4 Address . . . . . : 192.168.x.x
+```text
+data/soil_images/
+  Sandy/
+  Clay/
+  Loam/
+  Black/
+  Red/
 ```
 
-Then update `constants/ApiService.ts`:
-```typescript
-export const API_BASE_URL = "http://192.168.x.x:8000";
-//                                    ^^^^^^^^^^^^
-//                          Replace with your actual IP
-```
+Training can take substantially longer than normal API startup and should be
+run separately from the application server.
 
-> ⚠️ Use your **local network IP** (not `localhost`) when testing on a physical Android device.
+## Troubleshooting
 
----
+### `Cannot connect to server`
 
-## 🧠 Training the CNN Soil Classifier (Optional)
+1. Confirm the backend is running.
+2. Open <http://127.0.0.1:8000/health> on the computer running the server.
+3. Check the URL under Profile → Server Connection.
+4. Use the computer's LAN IP for a physical phone, not `localhost`.
+5. Check Windows Firewall and confirm both devices share the same network.
 
-The NPK model works without images. But for accurate **soil type** detection, you need the CNN trained on real soil images.
+### Model loading errors
 
-### Get Dataset
-Download from Kaggle:  
-👉 https://www.kaggle.com/datasets/jayaprakashpondy/soil-image-dataset
+Confirm that the required files exist under `saved_models/`. If they are
+missing, use the training scripts or restore the supplied model artifacts.
 
-Extract and organize as:
-```
-backend/data/soil_images/
-    Sandy/   (≥100 images)
-    Clay/    (≥100 images)
-    Loam/    (≥100 images)
-    Black/   (≥100 images)
-    Red/     (≥100 images)
-```
+### API validation errors
 
-### Train
-```powershell
-python train_models.py --soil-data ./data/soil_images
-```
-> Training takes 10–30 minutes depending on GPU/CPU.
-
----
-
-## ☁️ Google Cloud Vision API (Optional)
-
-Adds image validation — checks if the uploaded image is actually soil.
-
-1. Go to https://console.cloud.google.com/
-2. Create a project → Enable **Cloud Vision API**
-3. Generate an **API Key**
-4. Add to `.env`:
-```
-GOOGLE_CLOUD_API_KEY=AIza...your-key-here
-```
-
-> ✅ Without a key, the app still works — it uses a fallback response.
-
----
-
-## 🔬 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Check server status |
-| POST | `/analyze` | Analyse soil image |
-
-### Example `/analyze` Response
-```json
-{
-  "soil_type": "Loam",
-  "soil_confidence": 87.4,
-  "nutrients": {
-    "nitrogen":   { "value": 0.38, "unit": "%" },
-    "phosphorus": { "value": 22.1, "unit": "ppm" },
-    "potassium":  { "value": 195.0, "unit": "ppm" },
-    "ph":         { "value": 6.8, "unit": "" }
-  },
-  "recommended_crops": [
-    { "name": "Cotton", "icon": "🌿", "season": "Kharif", "water": "Medium" }
-  ],
-  "fertilizer_advice": ["✅ NPK levels are balanced"],
-  "ph_advice": "🟢 Neutral pH — Ideal for most Indian crops"
-}
-```
+Open <http://127.0.0.1:8000/docs> to inspect the current request schemas and
+try an endpoint independently of the mobile app.

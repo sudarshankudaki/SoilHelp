@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "SoilHelp",
+    "slug": "soilhelp",
+    "scheme": "soilhelp",
+    "ios": {
+      "bundleIdentifier": "com.soilhelp.app"
+    },
+    "android": {
+      "package": "com.soilhelp.app"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-router",
+      "expo-splash-screen",
+      "expo-status-bar",
+      "expo-web-browser"
+    ]
+  }
+}

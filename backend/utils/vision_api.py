@@ -48,14 +48,17 @@ async def analyze_with_vision_api(image_bytes: bytes) -> Dict[str, Any]:
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             response = await client.post(
-                f"{VISION_API_URL}-key={GOOGLE_API_KEY}",
+                f"{VISION_API_URL}?key={GOOGLE_API_KEY}",
                 json=payload,
             )
             response.raise_for_status()
             data = response.json()
             return _parse_vision_response(data)
+    except httpx.HTTPStatusError as http_err:
+        print(f"[Vision API] HTTP error {http_err.response.status_code}: {http_err.response.text}")
+        return _mock_vision_response()
     except Exception as e:
-        print(f"[Vision API] Error: {e}")
+        print(f"[Vision API] Request error: {e}")
         return _mock_vision_response()
 
 

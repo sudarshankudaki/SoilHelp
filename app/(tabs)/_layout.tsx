@@ -6,16 +6,18 @@ import { Pressable } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { useTranslation } from '@/context/LanguageContext';
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
+  color: React.ComponentProps<typeof FontAwesome>['color'];
 }) {
   return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -34,7 +36,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: t('dashboard'),
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
@@ -55,35 +57,35 @@ export default function TabLayout() {
       <Tabs.Screen
         name="registration"
         options={{
-          title: 'Register',
+          title: t('register'),
           tabBarIcon: ({ color }) => <TabBarIcon name="user-plus" color={color} />,
         }}
       />
       <Tabs.Screen
         name="collection"
         options={{
-          title: 'Collect',
+          title: t('collect'),
           tabBarIcon: ({ color }) => <TabBarIcon name="flask" color={color} />,
         }}
       />
       <Tabs.Screen
         name="tracking"
         options={{
-          title: 'Track',
+          title: t('track'),
           tabBarIcon: ({ color }) => <TabBarIcon name="map-marker" color={color} />,
         }}
       />
       <Tabs.Screen
         name="upload"
         options={{
-          title: 'Upload',
+          title: t('upload'),
           tabBarIcon: ({ color }) => <TabBarIcon name="upload" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('profile'),
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />

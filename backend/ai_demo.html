@@ -1,0 +1,384 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoilHelp AI - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .status {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .status-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .status-card.online {
+            border-left: 5px solid #10b981;
+        }
+
+        .status-card.offline {
+            border-left: 5px solid #ef4444;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .input-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-card .content {
+            color: #333;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee2e2;
+            border-left: 5px solid #ef4444;
+            padding: 20px;
+            border-radius: 10px;
+            color: #991b1b;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #d1fae5;
+            border-left: 5px solid #10b981;
+            padding: 20px;
+            border-radius: 10px;
+            color: #065f46;
+            margin: 20px 0;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌱 SoilHelp AI - Live Demo</h1>
+            <p>AI-Powered Soil Analysis & Recommendations</p>
+        </div>
+
+        <div class="status">
+            <div class="status-card" id="serverStatus">
+                <h4>🖥️ Backend Server</h4>
+                <p id="serverStatusText">Checking...</p>
+            </div>
+            <div class="status-card" id="aiStatus">
+                <h4>🤖 AI Service</h4>
+                <p id="aiStatusText">Checking...</p>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h2>📊 Enter Soil Analysis Data</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Soil Type</label>
+                    <select id="soilType">
+                        <option value="Red">Red Soil</option>
+                        <option value="Black">Black Soil</option>
+                        <option value="Sandy">Sandy Soil</option>
+                        <option value="Clay">Clay Soil</option>
+                        <option value="Loam">Loam Soil</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nitrogen (%)</label>
+                    <input type="number" id="nitrogen" value="0.12" step="0.01" min="0" max="1">
+                </div>
+                <div class="form-group">
+                    <label>Phosphorus (ppm)</label>
+                    <input type="number" id="phosphorus" value="8.5" step="0.1" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Potassium (ppm)</label>
+                    <input type="number" id="potassium" value="120" step="1" min="0" max="500">
+                </div>
+                <div class="form-group">
+                    <label>pH Level</label>
+                    <input type="number" id="ph" value="5.9" step="0.1" min="0" max="14">
+                </div>
+                <div class="form-group">
+                    <label>Region</label>
+                    <select id="region">
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Telangana">Telangana</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn" onclick="getRecommendations()" id="analyzeBtn">
+                🚀 Get AI Recommendations
+            </button>
+        </div>
+
+        <div id="resultsContainer"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const AI_BASE = `${API_BASE}/ai`;
+
+        // Check status on load
+        window.onload = () => {
+            checkServerStatus();
+            checkAIStatus();
+        };
+
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                document.getElementById('serverStatus').className = 'status-card online';
+                document.getElementById('serverStatusText').textContent = '✅ Online';
+            } catch (error) {
+                document.getElementById('serverStatus').className = 'status-card offline';
+                document.getElementById('serverStatusText').textContent = '❌ Offline';
+                showError('Server is not running. Please start it with: python -m uvicorn main:app --reload');
+            }
+        }
+
+        async function checkAIStatus() {
+            try {
+                const response = await fetch(`${AI_BASE}/health`);
+                const data = await response.json();
+                document.getElementById('aiStatus').className = 'status-card online';
+                document.getElementById('aiStatusText').textContent = data.status === 'AI service operational' ? '✅ Online' : '⚠️ Fallback Mode';
+            } catch (error) {
+                document.getElementById('aiStatus').className = 'status-card offline';
+                document.getElementById('aiStatusText').textContent = '⚠️ Fallback Mode';
+            }
+        }
+
+        async function getRecommendations() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Analyzing...';
+
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Getting AI recommendations...</p></div>';
+
+            const soilData = {
+                soil_type: document.getElementById('soilType').value,
+                nitrogen: parseFloat(document.getElementById('nitrogen').value),
+                phosphorus: parseFloat(document.getElementById('phosphorus').value),
+                potassium: parseFloat(document.getElementById('potassium').value),
+                ph: parseFloat(document.getElementById('ph').value),
+                region: document.getElementById('region').value
+            };
+
+            try {
+                const response = await fetch(`${AI_BASE}/recommendations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(soilData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                showError(`Error: ${error.message}. Make sure the server is running!`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Get AI Recommendations';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            resultsContainer.innerHTML = `
+                <div class="success">
+                    <strong>✅ Analysis Complete!</strong> AI recommendations generated successfully.
+                </div>
+                
+                <div class="results">
+                    <div class="result-card">
+                        <h3><span class="emoji">💡</span> Soil Health Explanation</h3>
+                        <div class="content">${data.soil_health_explanation || 'Not available'}</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3><span class="emoji">💊</span> Fertilizer Recommendations</h3>
+                        <div class="content">${data.fertilizer_recommendation?.recommendation || 'Not available'}</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3><span class="emoji">🌾</span> Suitable Crops</h3>
+                        <div class="content">${data.crop_suggestions?.crops || 'Not available'}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = `
+                <div class="error">
+                    <strong>❌ Error:</strong> ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

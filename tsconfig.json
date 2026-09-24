@@ -1,10 +1,12 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "expo/tsconfig.base.json",
   "compilerOptions": {
+    "strict": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "types": ["jest", "node"],
     "paths": {
       "@/*": ["./*"]
-    },
-    "ignoreDeprecations": "6.0"
+    }
   }
 }

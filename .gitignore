@@ -39,3 +39,24 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Environment variables
+backend/.env
+.env
+
+# Database
+backend/*.db
+backend/soilhelp.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Kiro
+.kiro/
+
+# Large files
+backend.zip

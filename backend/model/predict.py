@@ -535,6 +535,67 @@ def preprocess_image(image_bytes: bytes) -> tuple:
     return img_tensor, color_features, img_cv
 
 
+
+def check_image_quality(img_array: np.ndarray) -> tuple:
+    """
+    Check if soil image meets quality standards for accurate prediction.
+    
+    Rejects images that are:
+    - Too blurry (camera shake, out of focus)
+    - Too dark or too bright (poor lighting)
+    - Missing sufficient soil content (mostly vegetation/hands)
+    
+    Args:
+        img_array: RGB image array (H x W x 3), uint8 [0-255]
+    
+    Returns:
+        (is_valid, error_message)
+        - is_valid: True if image passes quality checks
+        - error_message: Empty string if valid, helpful error message if invalid
+    
+    Example:
+        >>> img = np.array(Image.open('soil.jpg'))
+        >>> is_valid, msg = check_image_quality(img)
+        >>> if not is_valid:
+        >>>     print(f"Image rejected: {msg}")
+    """
+    # Convert to grayscale for blur detection
+    gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+    
+    # 1. BLUR DETECTION (Laplacian variance method)
+    # Blurry images have low edge strength variance
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    if laplacian_var < 100:
+        return False, "Image is too blurry. Please hold camera steady and retake photo."
+    
+    # 2. BRIGHTNESS CHECK
+    # Too dark or too bright images lose color/texture information
+    brightness = np.mean(img_array)
+    if brightness < 15:
+        return False, "Image is too dark. Please retake in better lighting or use flash."
+    if brightness > 220:
+        return False, "Image is overexposed. Reduce brightness or avoid direct sunlight and retake."
+    
+    # 3. SOIL CONTENT CHECK
+    # Ensure at least 30% of image contains soil-colored pixels
+    # Soil colors: brown/red/gray hues (H: 0-30 or low saturation)
+    hsv = cv2.cvtColor(img_array, cv2.COLOR_RGB2HSV)
+    
+    # Soil mask: brown/red hues OR low saturation (gray/black soil)
+    h, s, v = hsv[:,:,0], hsv[:,:,1], hsv[:,:,2]
+    soil_mask = (
+        ((h < 30) | (h > 150)) &  # Brown/red or gray hues
+        (s > 10) &                 # Not pure white
+        (v > 20) & (v < 200)       # Not too dark or too bright
+    )
+    
+    soil_pct = np.sum(soil_mask) / soil_mask.size
+    if soil_pct < 0.30:
+        return False, "Not enough soil visible in image. Please retake closer to soil surface with less vegetation/background."
+    
+    # All checks passed
+    return True, ""
+
 def _run_npk_ensemble(ensemble, feat_scaled: np.ndarray) -> np.ndarray:
     """Weighted blend of RF and GB ensemble predictions."""
     if isinstance(ensemble, dict):
@@ -619,3 +680,4 @@ if __name__ == "__main__":
     print("[-] Training NPK regressor...")
     train_npk_regressor()
     print("[-] All models trained and saved!")
+

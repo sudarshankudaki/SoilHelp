@@ -786,7 +786,7 @@ Member 3.
 
 ### Current limitation
 
-The language option is functional for translated keys, but notification, privacy, help, and logout menu items are mostly UI placeholders.
+The language option is functional for translated keys. Notifications now show live farmer-registration and sample-collection activity; privacy, help, and logout menu items remain planned UI areas.
 
 ### Team owner
 

@@ -25,6 +25,7 @@ import NutrientRadarChart from '@/components/charts/NutrientRadarChart';
 import PHScale from '@/components/charts/PHScale';
 import SoilProbabilityGraph from '@/components/charts/SoilProbabilityGraph';
 import NutrientPieChart from '@/components/charts/NutrientPieChart';
+import { useTranslation } from '@/context/LanguageContext';
 
 // ── Nutrient status helpers ───────────────────────────────────────────────────
 function getNutrientStatus(value: number, min: number, max: number) {
@@ -110,6 +111,7 @@ export default function AnalysisScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const router = useRouter();
+  const { t } = useTranslation();
   const params = useLocalSearchParams();
   const { width: screenWidth } = useWindowDimensions();
 
@@ -123,7 +125,7 @@ export default function AnalysisScreen() {
   if (!result) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <Stack.Screen options={{ title: 'AI Analysis', headerBackTitle: 'Back' }} />
+        <Stack.Screen options={{ title: t('aiAnalysis'), headerBackTitle: t('back') }} />
         <View style={styles.loadingContainer}>
           <View style={[styles.scanBox, { borderColor: theme.primary, backgroundColor: theme.cardBackground }]}>
             {[60, 80, 45, 70, 55, 90].map((w, i) => (
@@ -133,7 +135,7 @@ export default function AnalysisScreen() {
               <ActivityIndicator size="large" color={theme.primary} />
             </View>
           </View>
-          <Text style={[styles.loadingTitle, { color: theme.text }]}>Analysing Soil Sample...</Text>
+          <Text style={[styles.loadingTitle, { color: theme.text }]}>{t('analysingSample')}</Text>
           <Text style={[styles.loadingSubtitle, { color: theme.tabIconDefault }]}>
             Running AI model · Predicting NPK · Matching crops
           </Text>
@@ -168,12 +170,12 @@ export default function AnalysisScreen() {
       `• pH: ${nutrients.ph.value}\n\n` +
       `Top Crops: ${result.recommended_crops.slice(0, 3).map((c: any) => c.name).join(', ')}\n\n` +
       `${result.summary}`;
-    await Share.share({ message: msg, title: 'SoilHelp Analysis' });
+    await Share.share({ message: msg, title: t('aiAnalysis') });
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Stack.Screen options={{ title: 'Analysis Result', headerBackTitle: 'Back' }} />
+      <Stack.Screen options={{ title: t('analysisResult'), headerBackTitle: t('back') }} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
@@ -189,7 +191,7 @@ export default function AnalysisScreen() {
               <View style={styles.heroBadges}>
                 <View style={styles.heroBadge}>
                   <FontAwesome name="check-circle" size={12} color="rgba(255,255,255,0.9)" />
-                  <Text style={styles.heroBadgeText}> Done</Text>
+                  <Text style={styles.heroBadgeText}> {t('done')}</Text>
                 </View>
                 <View style={styles.heroBadge}>
                   <FontAwesome name="clock-o" size={12} color="rgba(255,255,255,0.9)" />
@@ -327,7 +329,7 @@ export default function AnalysisScreen() {
           onPress={handleShare}
         >
           <FontAwesome name="share-alt" size={18} color="#FFF" style={styles.btnIcon} />
-          <Text style={styles.primaryButtonText}>Share Report with Farmer</Text>
+          <Text style={styles.primaryButtonText}>{t('shareReport')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -336,7 +338,7 @@ export default function AnalysisScreen() {
           onPress={() => router.back()}
         >
           <FontAwesome name="arrow-left" size={16} color={theme.primary} style={styles.btnIcon} />
-          <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>Analyse Another Sample</Text>
+          <Text style={[styles.secondaryButtonText, { color: theme.primary }]}>{t('analyseAnother')}</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -366,6 +368,8 @@ const styles = StyleSheet.create({
 
   // Hero
   heroCard: {
+    borderTopWidth: 4,
+    borderTopColor: 'rgba(255,255,255,0.5)',
     borderRadius: 20, padding: 20, marginBottom: 16,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 6,

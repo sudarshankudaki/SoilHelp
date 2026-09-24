@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity, Image } from 'react-native';
 import { Text } from '@/components/Themed';
 import Widget from '@/components/Widget';
@@ -6,12 +7,32 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { useTranslation } from '@/context/LanguageContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { getFarmersAsync, onFarmersChange } from '@/constants/FarmerData';
+import { getSamples } from '@/constants/SampleService';
+import { Activity, getActivities, onActivitiesChange } from '@/constants/ActivityService';
 
 export default function DashboardScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const { t } = useTranslation();
   const router = useRouter();
+
+  const [farmersCount, setFarmersCount] = useState<number>(5);
+  const [samplesCount, setSamplesCount] = useState<number>(3);
+  const [activities, setActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    getFarmersAsync().then((list) => setFarmersCount(list.length));
+    getSamples().then((list) => setSamplesCount(list.length));
+    getActivities().then(setActivities);
+
+    const unsubscribe = onFarmersChange((updated) => setFarmersCount(updated.length));
+    const unsubscribeActivities = onActivitiesChange(setActivities);
+    return () => {
+      unsubscribe();
+      unsubscribeActivities();
+    };
+  }, []);
 
   return (
     <ScrollView 
@@ -31,83 +52,67 @@ export default function DashboardScreen() {
           style={styles.bannerImage}
         />
         <View style={styles.bannerOverlay}>
-          <Text style={styles.bannerText}>Smart Farming</Text>
-          <Text style={styles.bannerSubtext}>Optimize your yield with AI analysis</Text>
+          <Text style={styles.bannerText}>{t('smartFarming')}</Text>
+          <Text style={styles.bannerSubtext}>{t('optimizeYield')}</Text>
         </View>
       </View>
 
       <View style={styles.widgetsGrid}>
         <Widget 
           title={t('farmers')}
-          value="12"
+          value={String(farmersCount)}
           iconName="users"
           route="/farmers"
-          description="New Registrations"
+          description="Registered Farmers"
         />
         <Widget 
           title={t('collections')}
-          value="5"
+          value="1"
           iconName="flask"
           route="/collection"
-          description="Pending Samples"
+          description="Scan Sample QR"
         />
         <Widget 
           title={t('tracking')}
-          value="3"
+          value={String(samplesCount)}
           iconName="map-marker"
           route="/tracking"
-          description="In Transit"
+          description="In Pipeline"
         />
         <Widget 
           title={t('results')}
-          value="8"
+          value="AI"
           iconName="file-text-o"
           route="/upload"
-          description="Ready to Upload"
+          description="Soil Screening"
         />
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Activities</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('recentActivities')}</Text>
         <TouchableOpacity onPress={() => router.push('/farmers')}>
-          <Text style={[styles.seeAll, { color: theme.primary }]}>See All</Text>
+          <Text style={[styles.seeAll, { color: theme.primary }]}>{t('seeAll')}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={[styles.activitiesCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <ActivityItem 
-          icon="user-plus" 
-          title="Farmer Ramesh Kumar registered" 
-          time="2 mins ago" 
-          theme={theme} 
-        />
-        <View style={[styles.divider, { backgroundColor: theme.border }]} />
-        <ActivityItem 
-          icon="flask" 
-          title="Sample #SH-2026-892 collected" 
-          time="45 mins ago" 
-          theme={theme} 
-        />
-        <View style={[styles.divider, { backgroundColor: theme.border }]} />
-        <ActivityItem 
-          icon="truck" 
-          title="3 samples dispatched to lab" 
-          time="3 hours ago" 
-          theme={theme} 
-        />
-        <View style={[styles.divider, { backgroundColor: theme.border }]} />
-        <ActivityItem 
-          icon="file-text-o" 
-          title="Report ready for Suresh Reddy" 
-          time="Yesterday" 
-          theme={theme} 
-        />
+        {activities.slice(0, 4).map((activity, index) => (
+          <React.Fragment key={activity.id}>
+            {index > 0 && <View style={[styles.divider, { backgroundColor: theme.border }]} />}
+            <ActivityItem
+              icon={activity.icon}
+              title={activity.title}
+              time={activity.timeLabel}
+              theme={theme}
+            />
+          </React.Fragment>
+        ))}
       </View>
     </ScrollView>
   );
 }
 
-function ActivityItem({ icon, title, time, theme }: { icon: any, title: string, time: string, theme: any }) {
+function ActivityItem({ icon, title, time, theme }: { icon: React.ComponentProps<typeof FontAwesome>['name'], title: string, time: string, theme: any }) {
   return (
     <View style={styles.activityItem}>
       <View style={[styles.activityIcon, { backgroundColor: theme.secondary }]}>

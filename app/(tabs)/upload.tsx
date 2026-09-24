@@ -10,6 +10,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { analyzeSoilImage, checkBackendHealth, SoilAnalysisResult } from '@/constants/ApiService';
+import { useTranslation } from '@/context/LanguageContext';
 
 type UploadStage = 'idle' | 'picked' | 'uploading' | 'done';
 
@@ -17,6 +18,7 @@ export default function UploadScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [stage, setStage] = useState<UploadStage>('idle');
   const [pickedImageUri, setPickedImageUri] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function UploadScreen() {
   const pickFromGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow access to your photo library to upload soil images.');
+      Alert.alert(t('permissionNeeded'), t('photoLibraryPermission'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -46,7 +48,7 @@ export default function UploadScreen() {
   const captureWithCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow camera access to photograph soil samples.');
+      Alert.alert(t('permissionNeeded'), t('cameraPermission'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -69,17 +71,18 @@ export default function UploadScreen() {
     setErrorMsg(null);
 
     // Check server reachability first
-    const isAlive = await checkBackendHealth();
-    if (!isAlive) {
+    const health = await checkBackendHealth();
+    if (!health.ok) {
       setStage('picked');
-      setErrorMsg('Cannot reach the SoilHelp server. Make sure the backend is running.');
+      setErrorMsg(
+        `Cannot reach the SoilHelp server at ${health.url}. Make sure the backend is running and check your IP in Profile > Server Settings.`
+      );
       return;
     }
 
     try {
       const result: SoilAnalysisResult = await analyzeSoilImage(pickedImageUri);
       setStage('done');
-      // Navigate to analysis screen, passing results as JSON param
       router.push({
         pathname: '/analysis',
         params: { result: JSON.stringify(result) },
@@ -88,7 +91,8 @@ export default function UploadScreen() {
       setStage('picked');
       const msg = typeof err === 'string'
         ? err
-        : (err?.message ? (typeof err.message === 'string' ? err.message : JSON.stringify(err.message)) : 'Analysis failed. Please try again.');
+        : (err?.message ? (typeof err.message === 'string' ? err.message : JSON.stringify(err.message)) : t('analysisFailed'));
+      console.error('[Upload] error:', msg);
       setErrorMsg(msg);
     }
   };
@@ -109,7 +113,7 @@ export default function UploadScreen() {
         <View style={[styles.iconBadge, { backgroundColor: theme.secondary }]}>
           <FontAwesome name="cloud-upload" size={32} color={theme.primary} />
         </View>
-        <Text style={styles.title}>Upload Soil Image</Text>
+        <Text style={styles.title}>{t('uploadSoilImage')}</Text>
         <Text style={[styles.subtitle, { color: theme.tabIconDefault }]}>
           Photograph or upload a soil sample to get instant AI-powered nutrient analysis.
         </Text>
@@ -121,7 +125,7 @@ export default function UploadScreen() {
           <Image source={{ uri: pickedImageUri }} style={styles.previewImage} />
           <TouchableOpacity style={styles.changePhoto} onPress={resetState}>
             <FontAwesome name="times-circle" size={22} color="#DC2626" />
-            <Text style={styles.changePhotoText}>Remove</Text>
+            <Text style={styles.changePhotoText}>{t('remove')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -132,12 +136,12 @@ export default function UploadScreen() {
           activeOpacity={0.8}
         >
           <FontAwesome name="image" size={44} color={theme.tabIconDefault} style={styles.uploadIcon} />
-          <Text style={[styles.uploadText, { color: theme.text }]}>Tap to browse photos</Text>
+          <Text style={[styles.uploadText, { color: theme.text }]}>{t('browsePhotos')}</Text>
           <Text style={[styles.uploadSubtext, { color: theme.tabIconDefault }]}>
             JPG or PNG, max 20 MB
           </Text>
           <View style={[styles.browseButton, { backgroundColor: theme.secondary }]}>
-            <Text style={[styles.browseButtonText, { color: theme.primary }]}>Select from Gallery</Text>
+            <Text style={[styles.browseButtonText, { color: theme.primary }]}>{t('selectFromGallery')}</Text>
           </View>
         </TouchableOpacity>
       )}
@@ -160,15 +164,24 @@ export default function UploadScreen() {
           onPress={captureWithCamera}
         >
           <FontAwesome name="camera" size={20} color="#FFF" style={styles.btnIcon} />
-          <Text style={styles.cameraButtonText}>Capture Soil Photo</Text>
+          <Text style={styles.cameraButtonText}>{t('captureSoilPhoto')}</Text>
         </TouchableOpacity>
       )}
 
       {/* ── Error Message ───────────────────────────────────────────────────── */}
       {errorMsg && (
         <View style={[styles.errorBox, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]}>
-          <FontAwesome name="exclamation-triangle" size={16} color="#DC2626" />
-          <Text style={styles.errorText}>{errorMsg}</Text>
+          <FontAwesome name="exclamation-triangle" size={16} color="#DC2626" style={{ marginTop: 2 }} />
+          <View style={{ flex: 1, marginLeft: 8 }}>
+            <Text style={styles.errorText}>{errorMsg}</Text>
+            <TouchableOpacity
+              style={styles.errorActionBtn}
+              onPress={() => router.push('/profile')}
+            >
+              <FontAwesome name="cog" size={12} color="#991B1B" style={{ marginRight: 4 }} />
+              <Text style={styles.errorActionText}>{t('openServerSettings')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -186,12 +199,12 @@ export default function UploadScreen() {
           {stage === 'uploading' ? (
             <>
               <ActivityIndicator color="#FFF" size="small" style={styles.btnIcon} />
-              <Text style={styles.analyzeButtonText}>Analysing with AI...</Text>
+              <Text style={styles.analyzeButtonText}>{t('analysingWithAI')}</Text>
             </>
           ) : (
             <>
               <FontAwesome name="search" size={18} color="#FFF" style={styles.btnIcon} />
-              <Text style={styles.analyzeButtonText}>Analyse Soil Sample</Text>
+              <Text style={styles.analyzeButtonText}>{t('analyseSoilSample')}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -199,12 +212,12 @@ export default function UploadScreen() {
 
       {/* ── Tips ────────────────────────────────────────────────────────────── */}
       <View style={[styles.tipsCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <Text style={[styles.tipsTitle, { color: theme.text }]}>📷 Photo Tips</Text>
+        <Text style={[styles.tipsTitle, { color: theme.text }]}>📷 {t('photoTips')}</Text>
         {[
-          'Take photo in natural daylight',
-          'Fill the frame with the soil sample',
-          'Avoid shadows or blurry images',
-          'Spread soil evenly on a flat surface',
+          t('naturalDaylight'),
+          t('fillFrame'),
+          t('avoidBlur'),
+          t('spreadSoil'),
         ].map((tip, i) => (
           <View key={i} style={styles.tipRow}>
             <FontAwesome name="check" size={12} color={theme.success} style={styles.tipIcon} />
@@ -265,7 +278,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-start',
     borderRadius: 10, borderWidth: 1, padding: 12, marginBottom: 16,
   },
-  errorText: { flex: 1, color: '#DC2626', fontSize: 13, marginLeft: 8, lineHeight: 18 },
+  errorText: { color: '#DC2626', fontSize: 13, lineHeight: 18 },
+  errorActionBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    marginTop: 8, paddingVertical: 4, paddingHorizontal: 8,
+    backgroundColor: '#FEE2E2', borderRadius: 6, alignSelf: 'flex-start',
+    borderWidth: 1, borderColor: '#FCA5A5',
+  },
+  errorActionText: { color: '#991B1B', fontSize: 12, fontWeight: 'bold' },
 
   analyzeButton: {
     flexDirection: 'row', borderRadius: 12, paddingVertical: 18,
