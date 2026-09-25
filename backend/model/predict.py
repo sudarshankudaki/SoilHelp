@@ -19,14 +19,26 @@ from PIL import Image
 import io
 
 # --- TensorFlow / Keras -------------------------------------------------------
+# --- TensorFlow / Keras (OPTIONAL for cloud deployment) -----------------------
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-import tensorflow as tf
-from tensorflow.keras import layers, models
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.optimizers import Adam
+try:
+    import tensorflow as tf
+    from tensorflow.keras import layers, models
+    from tensorflow.keras.applications import MobileNetV2
+    from tensorflow.keras.optimizers import Adam
+    HAS_TENSORFLOW = True
+except ImportError:
+    HAS_TENSORFLOW = False
+    print("[WARNING] TensorFlow not available - using fallback mode")
+    class DummyTF:
+        class keras:
+            class models:
+                @staticmethod
+                def load_model(path):
+                    return None
+    tf = DummyTF()
 
-# --- scikit-learn -------------------------------------------------------------
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, VotingRegressor
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.preprocessing import StandardScaler, LabelEncoder
@@ -680,4 +692,5 @@ if __name__ == "__main__":
     print("[-] Training NPK regressor...")
     train_npk_regressor()
     print("[-] All models trained and saved!")
+
 
