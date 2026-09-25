@@ -3,16 +3,14 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Saved models (large files)
-saved_models/
-*.h5
-*.pkl
-
 # Environment
 .env
 
-# Data
+# Data (training data is large, keep local only)
 data/
 
 # Logs
 *.log
+
+# Virtual environment
+.venv/
