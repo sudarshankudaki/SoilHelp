@@ -24,11 +24,10 @@ from routers import ai_assistant as ai_router
 async def lifespan(app: FastAPI):
     print("- SoilHelp Backend starting...")
     init_db()          # creates soilhelp.db and tables if they don't exist
-    load_models()
-    print("- Models loaded. Server ready!")
+    # Models will be loaded on first request (lazy loading) to reduce memory usage
+    print("- Database ready. Models will load on first request.")
     yield
     print("- Shutting down...")
-
 
 app = FastAPI(
     title="SoilHelp API",
