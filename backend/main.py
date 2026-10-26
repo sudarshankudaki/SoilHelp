@@ -29,6 +29,7 @@ async def lifespan(app: FastAPI):
     yield
     print("- Shutting down...")
 
+
 app = FastAPI(
     title="SoilHelp API",
     description="AI-powered soil analysis for Indian farmers",
