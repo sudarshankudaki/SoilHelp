@@ -1,8 +1,8 @@
 import { Platform } from 'react-native';
 
 const STORAGE_KEY = '@soilhelp_server_url';
-export const DEFAULT_WEB_URL = 'http://localhost:8000';
-export const DEFAULT_DEVICE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.70.2.26:8000';
+export const DEFAULT_WEB_URL = process.env.EXPO_PUBLIC_API_URL || 'https://soilhelp.onrender.com';
+export const DEFAULT_DEVICE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://soilhelp.onrender.com';
 
 export function getDefaultServerUrl(): string {
   return Platform.OS === 'web' ? DEFAULT_WEB_URL : DEFAULT_DEVICE_URL;
@@ -195,6 +195,7 @@ export async function testServerConnection(targetUrl?: string): Promise<{
  * Common presets for quick developer/user setup
  */
 export const PRESET_SERVER_URLS = [
+  { label: 'Production (Render)', url: 'https://soilhelp.onrender.com' },
   { label: 'Localhost (Web / iOS Sim)', url: 'http://localhost:8000' },
   { label: 'Android Emulator (10.0.2.2)', url: 'http://10.0.2.2:8000' },
   { label: 'This PC (10.70.2.26)', url: 'http://10.70.2.26:8000' },
