@@ -150,7 +150,8 @@ export async function testServerConnection(targetUrl?: string): Promise<{
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60 seconds for cold starts
+
 
     const response = await fetch(`${urlToTest}/health`, {
       method: 'GET',
@@ -178,7 +179,7 @@ export async function testServerConnection(targetUrl?: string): Promise<{
     let message = 'Could not reach server';
 
     if (err?.name === 'AbortError') {
-      message = 'Connection timed out (>4s)';
+      message = 'Connection timed out (>60s). Server may be waking from sleep.';
     } else if (err?.message) {
       message = err.message;
     }
