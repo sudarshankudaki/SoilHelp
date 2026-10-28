@@ -4,7 +4,7 @@
  */
 
 import { Platform } from "react-native";
-import { getServerBaseUrl, getCachedServerUrl, testServerConnection } from "./ServerConfig";
+import { getCachedServerUrl, getServerBaseUrl } from "./ServerConfig";
 
 // Dynamic base URL accessor - backwards-compatible with code that imports API_BASE_URL
 export const getApiBaseUrl = getServerBaseUrl;
@@ -168,7 +168,7 @@ export async function checkBackendHealth(): Promise<{ ok: boolean; url: string }
   const baseUrl = await getServerBaseUrl();
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
+    const timer = setTimeout(() => controller.abort(), 60000); // 60 seconds for Render cold starts
     const response = await fetch(`${baseUrl}/health`, {
       signal: controller.signal,
     });
