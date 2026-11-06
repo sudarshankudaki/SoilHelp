@@ -1,8 +1,9 @@
 import { Platform } from 'react-native';
 
 const STORAGE_KEY = '@soilhelp_server_url';
-export const DEFAULT_WEB_URL = process.env.EXPO_PUBLIC_API_URL || 'https://soilhelp.onrender.com';
-export const DEFAULT_DEVICE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://soilhelp.onrender.com';
+// For local development, use localhost. For production builds, set EXPO_PUBLIC_API_URL in Netlify
+export const DEFAULT_WEB_URL = process.env.EXPO_PUBLIC_API_URL || 'https://imply-sitting-grating.ngrok-free.dev';
+export const DEFAULT_DEVICE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 export function getDefaultServerUrl(): string {
   return Platform.OS === 'web' ? DEFAULT_WEB_URL : DEFAULT_DEVICE_URL;
@@ -196,6 +197,8 @@ export async function testServerConnection(targetUrl?: string): Promise<{
  * Common presets for quick developer/user setup
  */
 export const PRESET_SERVER_URLS = [
+  { label: 'ngrok (Active)', url: 'https://imply-sitting-grating.ngrok-free.dev' },
+  { label: 'Hugging Face (16GB RAM)', url: 'https://YOUR_USERNAME-soilhelp-backend.hf.space' },
   { label: 'Production (Render)', url: 'https://soilhelp.onrender.com' },
   { label: 'Localhost (Web / iOS Sim)', url: 'http://localhost:8000' },
   { label: 'Android Emulator (10.0.2.2)', url: 'http://10.0.2.2:8000' },
