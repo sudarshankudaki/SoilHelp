@@ -16,6 +16,10 @@ def get_gemini_api_key() -> str:
     """Get Gemini API key from environment variables."""
     api_key = os.getenv('GEMINI_API_KEY')
     
+    # Debug: Print what we're getting (Railway logs will show this)
+    print(f"DEBUG: GEMINI_API_KEY value: {api_key[:10] if api_key else 'None'}...")
+    print(f"DEBUG: All env vars starting with GEMINI: {[k for k in os.environ.keys() if 'GEMINI' in k]}")
+    
     if not api_key or api_key == 'your_gemini_api_key_here':
         raise ValueError(
             "Gemini API key not configured! "
