@@ -22,7 +22,15 @@ from utils.vision_api import analyze_with_vision_api
 from utils.recommendations import get_recommendations
 from routers import farmers as farmers_router
 from routers import samples as samples_router
-from routers import ai_assistant as ai_router
+
+# Try to import AI assistant, but make it optional
+try:
+    from routers import ai_assistant as ai_router
+    AI_ASSISTANT_AVAILABLE = True
+except Exception as e:
+    print(f"⚠️  AI Assistant not available: {e}")
+    AI_ASSISTANT_AVAILABLE = False
+    ai_router = None
 
 
 # -- Startup: load models + initialise SQLite DB once -------------------------
@@ -56,7 +64,13 @@ app.add_middleware(
 # Register CRUD routers
 app.include_router(farmers_router.router)
 app.include_router(samples_router.router)
-app.include_router(ai_router.router)
+
+# Register AI assistant router only if available
+if AI_ASSISTANT_AVAILABLE and ai_router:
+    app.include_router(ai_router.router)
+    print("✅ AI Assistant enabled")
+else:
+    print("⚠️  AI Assistant disabled (GEMINI_API_KEY not configured)")
 
 
 # -----------------------------------------------------------------------------
