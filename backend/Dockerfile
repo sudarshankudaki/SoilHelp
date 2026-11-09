@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for OpenCV, Pillow, and TensorFlow
+# Install system dependencies - FIXED for newer Debian
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libsm6 \
@@ -32,7 +32,6 @@ EXPOSE 8000
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
-ENV RAILWAY_BUILD=1
 
 # Run the application
 CMD ["python3", "main.py"]
