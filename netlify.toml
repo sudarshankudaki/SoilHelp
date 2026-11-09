@@ -6,7 +6,7 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
-  EXPO_PUBLIC_API_URL = "https://imply-sitting-grating.ngrok-free.dev"
+  EXPO_PUBLIC_API_URL = "https://soilhelp-production.up.railway.app"
 
 [[redirects]]
   from = "/*"
