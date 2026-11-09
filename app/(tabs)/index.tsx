@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Image } from 'react-native';
 import { Text } from '@/components/Themed';
-import Widget from '@/components/Widget';
-import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import Widget from '@/components/Widget';
+import { Activity, getActivities, onActivitiesChange } from '@/constants/ActivityService';
+import Colors from '@/constants/Colors';
+import { getFarmersAsync, onFarmersChange } from '@/constants/FarmerData';
+import { getSamples } from '@/constants/SampleService';
 import { useTranslation } from '@/context/LanguageContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getFarmersAsync, onFarmersChange } from '@/constants/FarmerData';
-import { getSamples } from '@/constants/SampleService';
-import { Activity, getActivities, onActivitiesChange } from '@/constants/ActivityService';
+import React, { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 export default function DashboardScreen() {
   const colorScheme = useColorScheme();
@@ -48,8 +48,9 @@ export default function DashboardScreen() {
 
       <View style={styles.bannerContainer}>
         <Image 
-          source={require('@/assets/images/banner.png')} 
+          source={require('../../assets/images/diff_soil.webp')} 
           style={styles.bannerImage}
+          resizeMode="cover"
         />
         <View style={styles.bannerOverlay}>
           <Text style={styles.bannerText}>{t('smartFarming')}</Text>
@@ -148,33 +149,44 @@ const styles = StyleSheet.create({
   },
   bannerContainer: {
     width: '100%',
-    height: 140,
+    height: 180,
     borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 24,
     position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   bannerImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   bannerOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
   },
   bannerText: {
     color: '#FFF',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   bannerSubtext: {
-    color: '#E5E7EB',
-    fontSize: 13,
+    color: '#F3F4F6',
+    fontSize: 14,
+    opacity: 0.95,
   },
   widgetsGrid: {
     flexDirection: 'row',

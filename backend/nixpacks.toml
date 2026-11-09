@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ['python311', 'gcc', 'g++', 'gfortran', 'libopenblas']
+
+[phases.install]
+cmds = ['pip install --upgrade pip', 'pip install -r requirements.txt']
+
+[phases.build]
+cmds = ['python -c "import tensorflow; print(tensorflow.__version__)"']
+
+[start]
+cmd = 'python main.py'

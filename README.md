@@ -1,87 +1,147 @@
-# SoilHelp
+# 🌱 SoilHelp - AI-Powered Soil Analysis for Karnataka Farmers
 
-SoilHelp is an Expo React Native app with a FastAPI backend for farmer
-registration, soil-sample tracking, image-based soil analysis, and crop or
-fertilizer recommendations.
+An intelligent mobile application that helps farmers analyze soil health and get crop recommendations using AI and Machine Learning.
 
-## Stack
+## ✨ Features
 
-- Frontend: TypeScript, React Native, Expo SDK 54, Expo Router
-- Backend: Python, FastAPI, SQLAlchemy
-- Database: SQLite (`backend/soilhelp.db`)
-- ML: TensorFlow, scikit-learn, Pillow, and OpenCV
+- 📸 **Instant Soil Analysis**: Upload a soil photo and get results in seconds
+- 🤖 **AI-Powered**: Uses TensorFlow CNN + Google Gemini AI
+- 🌾 **Crop Recommendations**: Get Karnataka-specific crop suggestions
+- 📊 **NPK Values**: Nitrogen, Phosphorus, Potassium analysis
+- 🌍 **Multilingual**: English + Kannada support
+- 📱 **Cross-Platform**: Works on Web, Android, and iOS
+- 💾 **Data Tracking**: Track soil samples over time
 
-## Run the full project
+## 🚀 Quick Start
 
-### 1. Start the backend
+### Prerequisites
+- Python 3.12+
+- Node.js 18+
+- npm or yarn
 
-In a terminal:
+### Installation
 
-```powershell
-cd D:\APP\SoilHelp\backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/sudarshankudaki/SoilHelp.git
+   cd SoilHelp
+   ```
+
+2. **Install Frontend Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Install Backend Dependencies**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+4. **Set up Environment Variables**
+   ```bash
+   cd backend
+   copy .env.example .env
+   # Edit .env and add your GEMINI_API_KEY
+   ```
+
+### Running the Project
+
+**Option 1: Use Startup Script (Recommended)**
+```bash
+# Double-click START_PROJECT.bat (Windows)
+# Or run: ./START_PROJECT.bat
+```
+
+**Option 2: Manual Start**
+
+Terminal 1 - Backend:
+```bash
+cd backend
 python main.py
 ```
 
-Verify it is running:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/health
-```
-
-The interactive API documentation is at
-<http://127.0.0.1:8000/docs>.
-
-### 2. Start the frontend
-
-In a second terminal:
-
-```powershell
-cd D:\APP\SoilHelp
-npm install
+Terminal 2 - Frontend:
+```bash
 npm start
+# Press 'w' for web
 ```
 
-Available platform commands:
+The app will open at http://localhost:8081
 
-```powershell
-npm run web
-npm run android
-npm run ios
+## 📖 Usage
+
+1. **Home**: Overview of features
+2. **Upload**: Take/upload soil photo for analysis
+3. **Collection**: Register new soil samples
+4. **Tracking**: View all samples and trends
+5. **Profile**: Settings and server configuration
+
+## 🏗️ Tech Stack
+
+### Frontend
+- React Native + Expo
+- TypeScript
+- Expo Router
+- React Navigation
+
+### Backend
+- FastAPI (Python)
+- TensorFlow / Keras
+- Google Gemini AI
+- SQLite Database
+- OpenCV
+- Scikit-learn
+
+## 📁 Project Structure
+
+```
+SoilHelp/
+├── app/              # React Native screens
+├── components/       # Reusable UI components
+├── constants/        # API services, config
+├── context/          # React context providers
+├── backend/
+│   ├── main.py      # FastAPI server
+│   ├── models.py    # Database models
+│   ├── routers/     # API endpoints
+│   ├── model/       # ML models
+│   ├── data/        # Training data
+│   └── utils/       # Helper functions
+├── assets/          # Images, fonts
+└── public/          # Static files
 ```
 
-Web and iOS simulator clients can normally use `http://localhost:8000`.
-Android emulators use `http://10.0.2.2:8000`. A physical phone must use the
-computer's LAN IP, such as `http://192.168.1.10:8000`.
+## 🔑 API Keys
 
-Set the URL in **Profile → Server Connection** inside the app. The phone and
-computer must be on the same network for a physical-device connection.
+Get your Gemini API key from:
+https://aistudio.google.com/apikey
 
-## Tests and checks
-
-Run the focused frontend service tests:
-
-```powershell
-npm test
+Add it to `backend/.env`:
+```
+GEMINI_API_KEY=your_key_here
 ```
 
-Run the TypeScript check:
+## 🌐 Deployment
 
-```powershell
-.\node_modules\.bin\tsc --noEmit
-```
+- **Frontend**: Deployed on Netlify - https://soilhelp.netlify.app
+- **Backend**: Deployed on Render - https://soilhelp.onrender.com
 
-Check backend Python syntax:
+## 📝 License
 
-```powershell
-cd D:\APP\SoilHelp\backend
-python -m compileall -q .
-```
+MIT License - see LICENSE file for details
 
-## Project documentation
+## 👥 Contributors
 
-- Backend setup and API details: [backend/README.md](./backend/README.md)
-- API service client: [constants/ApiService.ts](./constants/ApiService.ts)
-- Server URL configuration: [constants/ServerConfig.ts](./constants/ServerConfig.ts)
+- Sudarshan Kudaki
+
+## 🙏 Acknowledgments
+
+- Karnataka Agricultural Department
+- Google Gemini AI
+- TensorFlow Team
+- Expo Team
+
+---
+
+Made with ❤️ for Karnataka Farmers 🌾
