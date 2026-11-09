@@ -6,8 +6,11 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Load .env file if it exists (for local development)
+# In production (Railway/Docker), environment variables are set directly
 env_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path=env_path)
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
 
 def get_gemini_api_key() -> str:
     """Get Gemini API key from environment variables."""
