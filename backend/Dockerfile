@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    libgl1-mesa-glx \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -34,4 +34,4 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 
 # Run the application
-CMD ["python", "main.py"]
+CMD ["python3", "main.py"]
