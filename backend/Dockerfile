@@ -26,8 +26,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p saved_models data uploads
+# Create necessary directories and clean old models
+RUN mkdir -p saved_models data uploads && \
+    rm -f saved_models/npk_*.pkl && \
+    echo "Old model files cleaned"
 
 # Train NPK model with correct pickle protocol for Python 3.11
 RUN python3 -c "from model.predict import train_npk_regressor; train_npk_regressor(); print('NPK model trained successfully')"
