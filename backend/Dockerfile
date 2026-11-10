@@ -20,14 +20,14 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Train NPK model with correct pickle protocol for Python 3.11
-RUN python -c "import sys; sys.path.insert(0, '.'); from model.predict import train_npk_regressor; train_npk_regressor(); print('NPK model trained successfully')"
-
 # Copy application code
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p model data uploads
+RUN mkdir -p saved_models data uploads
+
+# Train NPK model with correct pickle protocol for Python 3.11
+RUN python3 -c "from model.predict import train_npk_regressor; train_npk_regressor(); print('NPK model trained successfully')"
 
 # Expose port
 EXPOSE 8000
