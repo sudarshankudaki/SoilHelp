@@ -34,12 +34,11 @@ RUN mkdir -p saved_models data uploads && \
 # Train NPK model with correct pickle protocol for Python 3.11
 RUN python3 -c "from model.predict import train_npk_regressor; train_npk_regressor(); print('NPK model trained successfully')"
 
-# Expose port
-EXPOSE 8000
+# Expose port (Railway will override with PORT env var)
+EXPOSE 8080
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
 
-# Run the application
+# Run the application (uses PORT from Railway env)
 CMD ["python3", "main.py"]
