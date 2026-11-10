@@ -500,8 +500,8 @@ def train_npk_regressor():
     # Saved as a dict so we can weighted-average at predict time
     ensemble = {"rf": rf, "gb": gb, "rf_weight": 0.60, "gb_weight": 0.40}
 
-    joblib.dump(ensemble, NPK_MODEL_PATH)
-    joblib.dump(scaler, SCALER_PATH)
+    joblib.dump(ensemble, NPK_MODEL_PATH, protocol=4)
+    joblib.dump(scaler, SCALER_PATH, protocol=4)
     print(f"[-] NPK ensemble saved to {NPK_MODEL_PATH}")
     return ensemble, scaler
 
