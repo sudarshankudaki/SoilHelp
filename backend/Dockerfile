@@ -1,6 +1,9 @@
 # Use Python 3.11 (compatible with all packages)
 FROM python:3.11-slim
 
+# Force rebuild - version 2
+ENV REBUILD_VERSION=2
+
 # Set working directory
 WORKDIR /app
 
