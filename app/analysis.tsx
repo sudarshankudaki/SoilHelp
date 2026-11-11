@@ -188,20 +188,20 @@ export default function AnalysisScreen() {
           <View style={styles.heroRow}>
             <View style={styles.heroLeft}>
               <Text style={styles.heroEmoji}>{soilEmoji}</Text>
-              <Text style={styles.heroSoilType}>{result.soil_type} Soil</Text>
               <View style={styles.summaryBox}>
+                <Text style={styles.heroSoilType}>{result.soil_type} Soil</Text>
                 <Text style={styles.heroSummaryText}>
                   {result.summary}
                 </Text>
               </View>
               <View style={styles.heroBadges}>
                 <View style={styles.heroBadge}>
-                  <FontAwesome name="check-circle" size={12} color="rgba(255,255,255,0.9)" />
-                  <Text style={styles.heroBadgeText}> {t('done')}</Text>
+                  <FontAwesome name="check-circle" size={14} color="#2E7D32" />
+                  <Text style={styles.heroBadgeText}>{t('done')}</Text>
                 </View>
                 <View style={styles.heroBadge}>
-                  <FontAwesome name="clock-o" size={12} color="rgba(255,255,255,0.9)" />
-                  <Text style={styles.heroBadgeText}> {result.analysis_time_seconds}s</Text>
+                  <FontAwesome name="clock-o" size={14} color="#1976D2" />
+                  <Text style={styles.heroBadgeText}>{result.analysis_time_seconds}s</Text>
                 </View>
               </View>
             </View>
@@ -209,9 +209,9 @@ export default function AnalysisScreen() {
             {/* Donut gauge replaces the old plain number */}
             <DonutGauge
               percentage={result.soil_confidence}
-              color="#FFFFFF"
-              trackColor="rgba(255,255,255,0.25)"
-              textColor="rgba(255,255,255,0.85)"
+              color="#1976D2"
+              trackColor="rgba(25, 118, 210, 0.2)"
+              textColor="#1B5E20"
               size={110}
               strokeWidth={10}
               label="Confidence"
@@ -383,28 +383,47 @@ const styles = StyleSheet.create({
   heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   heroLeft: { flex: 1, marginRight: 12 },
   heroEmoji: { fontSize: 36, marginBottom: 8 },
-  heroSoilType: { color: '#FFF', fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
   summaryBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#E8F5E9',
     borderRadius: 12,
-    padding: 12,
+    padding: 14,
     marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2E7D32',
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  heroSoilType: { 
+    color: '#1B5E20', 
+    fontSize: 24, 
+    fontWeight: 'bold', 
+    marginBottom: 8,
   },
   heroSummaryText: { 
-    color: '#1B5E20', 
-    fontSize: 16, 
-    lineHeight: 22, 
+    color: '#2E7D32', 
+    fontSize: 17, 
+    lineHeight: 24, 
     fontWeight: '700',
   },
   heroBadges: { flexDirection: 'row', gap: 10 },
   heroBadge: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12,
-    paddingHorizontal: 10, paddingVertical: 4,
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 12,
+    paddingHorizontal: 12, 
+    paddingVertical: 6,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  heroBadgeText: { color: 'rgba(255,255,255,0.95)', fontSize: 12, fontWeight: '600' },
+  heroBadgeText: { 
+    color: '#1B5E20', 
+    fontSize: 14, 
+    fontWeight: '700',
+    marginLeft: 4,
+  },
 
   // Card
   card: {

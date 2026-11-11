@@ -2,9 +2,8 @@
  * DonutGauge — circular arc that fills to show a percentage value.
  * Uses react-native-svg. Works on web + native.
  */
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 
 interface Props {
@@ -34,30 +33,32 @@ export default function DonutGauge({
 
   return (
     <View style={styles.wrapper}>
-      <Svg width={size} height={size}>
-        {/* Track ring */}
-        <Circle
-          cx={cx} cy={cy} r={r}
-          stroke={trackColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        {/* Filled arc — rotated so it starts at the top */}
-        <G transform={`rotate(-90 ${cx} ${cy})`}>
+      <View style={styles.gaugeBackground}>
+        <Svg width={size} height={size}>
+          {/* Track ring */}
           <Circle
             cx={cx} cy={cy} r={r}
-            stroke={color}
+            stroke={trackColor}
             strokeWidth={strokeWidth}
             fill="none"
-            strokeDasharray={`${dash} ${circumference}`}
-            strokeLinecap="round"
           />
-        </G>
-      </Svg>
-      {/* Centre labels */}
-      <View style={[styles.centre, { width: size, height: size }]}>
-        <Text style={[styles.number, { color }]}>{Math.round(percentage)}%</Text>
-        <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+          {/* Filled arc — rotated so it starts at the top */}
+          <G transform={`rotate(-90 ${cx} ${cy})`}>
+            <Circle
+              cx={cx} cy={cy} r={r}
+              stroke={color}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeDasharray={`${dash} ${circumference}`}
+              strokeLinecap="round"
+            />
+          </G>
+        </Svg>
+        {/* Centre labels */}
+        <View style={[styles.centre, { width: size, height: size }]}>
+          <Text style={[styles.number, { color: textColor }]}>{Math.round(percentage)}%</Text>
+          <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+        </View>
       </View>
     </View>
   );
@@ -65,10 +66,20 @@ export default function DonutGauge({
 
 const styles = StyleSheet.create({
   wrapper: { position: 'relative', alignItems: 'center' },
+  gaugeBackground: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 100,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   centre: {
-    position: 'absolute', top: 0, left: 0,
+    position: 'absolute', top: 8, left: 8,
     justifyContent: 'center', alignItems: 'center',
   },
-  number: { fontSize: 22, fontWeight: 'bold' },
-  label:  { fontSize: 10, marginTop: 2, opacity: 0.7 },
+  number: { fontSize: 24, fontWeight: 'bold' },
+  label:  { fontSize: 11, marginTop: 2, fontWeight: '600', opacity: 0.8 },
 });
