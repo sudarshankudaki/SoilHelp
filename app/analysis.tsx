@@ -8,23 +8,27 @@
  *  • NutrientBar          — individual bar per nutrient with optimal range markers
  *  • PHScale              — gradient pH strip with triangle needle
  */
-import React, { useMemo } from 'react';
-import {
-  StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, Share, useWindowDimensions,
-} from 'react-native';
 import { Text, View } from '@/components/Themed';
-import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { FontAwesome } from '@expo/vector-icons';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { SoilAnalysisResult } from '@/constants/ApiService';
+import Colors from '@/constants/Colors';
+import { FontAwesome } from '@expo/vector-icons';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useMemo } from 'react';
+import {
+    ActivityIndicator,
+    ScrollView,
+    Share,
+    StyleSheet,
+    TouchableOpacity,
+    useWindowDimensions,
+} from 'react-native';
 
 import DonutGauge from '@/components/charts/DonutGauge';
+import NutrientPieChart from '@/components/charts/NutrientPieChart';
 import NutrientRadarChart from '@/components/charts/NutrientRadarChart';
 import PHScale from '@/components/charts/PHScale';
 import SoilProbabilityGraph from '@/components/charts/SoilProbabilityGraph';
-import NutrientPieChart from '@/components/charts/NutrientPieChart';
 import { useTranslation } from '@/context/LanguageContext';
 
 // ── Nutrient status helpers ───────────────────────────────────────────────────
@@ -185,9 +189,11 @@ export default function AnalysisScreen() {
             <View style={styles.heroLeft}>
               <Text style={styles.heroEmoji}>{soilEmoji}</Text>
               <Text style={styles.heroSoilType}>{result.soil_type} Soil</Text>
-              <Text style={styles.heroSummaryText} numberOfLines={2}>
-                {result.summary}
-              </Text>
+              <View style={styles.summaryBox}>
+                <Text style={styles.heroSummaryText}>
+                  {result.summary}
+                </Text>
+              </View>
               <View style={styles.heroBadges}>
                 <View style={styles.heroBadge}>
                   <FontAwesome name="check-circle" size={12} color="rgba(255,255,255,0.9)" />
@@ -378,7 +384,20 @@ const styles = StyleSheet.create({
   heroLeft: { flex: 1, marginRight: 12 },
   heroEmoji: { fontSize: 36, marginBottom: 8 },
   heroSoilType: { color: '#FFF', fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
-  heroSummaryText: { color: 'rgba(255,255,255,0.85)', fontSize: 13, lineHeight: 18, marginBottom: 12 },
+  summaryBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2E7D32',
+  },
+  heroSummaryText: { 
+    color: '#1B5E20', 
+    fontSize: 16, 
+    lineHeight: 22, 
+    fontWeight: '700',
+  },
   heroBadges: { flexDirection: 'row', gap: 10 },
   heroBadge: {
     flexDirection: 'row', alignItems: 'center',
