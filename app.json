@@ -7,6 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "soilhelp",
     "userInterfaceStyle": "automatic",
+    "owner": "sudarshansketchartart_29",
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -28,9 +29,11 @@
       "package": "com.soilhelp.app",
       "versionCode": 1,
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -56,6 +59,12 @@
           "photosPermission": "Allow SoilHelp to access your photos to analyze soil images."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1db47c7e-bd71-45b4-bc40-72e9648c3073"
+      }
+    }
   }
 }
