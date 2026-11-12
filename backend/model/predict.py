@@ -45,7 +45,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 import joblib
 
 # --- Constants ----------------------------------------------------------------
-SOIL_CLASSES = ["Sandy", "Clay", "Loam", "Black", "Red", "Beach_Sand"]
+SOIL_CLASSES = ["Sandy", "Clay", "Loam", "Black", "Red"]
 TEXTURE_TO_INDEX = {cls.lower(): idx for idx, cls in enumerate(SOIL_CLASSES)}
 IMG_SIZE = (224, 224)
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "saved_models")
@@ -295,13 +295,6 @@ _ICAR_NPK = {
         "N": (0.06, 0.22), "P": (5.0, 20.0), "K": (90.0, 185.0), "pH": (4.8, 6.8),
         "colors": ([150, 60, 40], [200, 100, 80]),
         "ka_N": (0.10, 0.17), "ka_P": (7.5, 12.5), "ka_K": (130.0, 168.0), "ka_pH": (5.8, 6.5),
-    },
-    "Beach_Sand": {
-        # Beach sand: Very low nutrients, NOT suitable for agriculture
-        # High salinity, no organic matter, poor water retention
-        "N": (0.01, 0.05), "P": (1.0, 5.0), "K": (20.0, 60.0), "pH": (7.5, 8.5),
-        "colors": ([240, 240, 220], [255, 255, 245]),  # Very light, almost white
-        "ka_N": (0.01, 0.03), "ka_P": (1.0, 3.0), "ka_K": (20.0, 40.0), "ka_pH": (7.8, 8.3),
     },
 }
 
