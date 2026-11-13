@@ -1,4 +1,4 @@
-﻿"""
+"""
 SoilHelp - FastAPI Backend
 Main server: receives soil image, runs ML analysis, returns JSON results
 """
@@ -71,6 +71,29 @@ if AI_ASSISTANT_AVAILABLE and ai_router:
     print("✅ AI Assistant enabled")
 else:
     print("⚠️  AI Assistant disabled (GEMINI_API_KEY not configured)")
+
+
+# -----------------------------------------------------------------------------
+# GET /  - Root endpoint
+# -----------------------------------------------------------------------------
+@app.get("/")
+async def root():
+    return {
+        "message": "🌱 SoilHelp API is running successfully!",
+        "version": "1.0.0",
+        "status": "healthy",
+        "docs_url": "/docs",
+        "health_url": "/health",
+        "available_endpoints": [
+            "GET  /health",
+            "GET  /docs",
+            "POST /analyze",
+            "GET  /farmers",
+            "GET  /samples",
+            "POST /ai/recommendations",
+            "POST /ai/ask"
+        ]
+    }
 
 
 # -----------------------------------------------------------------------------

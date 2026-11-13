@@ -23,6 +23,10 @@ ipconfig | findstr /i "IPv4"
 echo.
 echo ============================================
 
-python main.py
+IF EXIST ".venv\Scripts\python.exe" (
+    .venv\Scripts\python.exe main.py
+) ELSE (
+    python main.py
+)
 
 pause
